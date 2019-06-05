@@ -1,0 +1,61 @@
+
+apply plugin : 'java'
+
+
+dependencies {
+    testCompile 'junit:junit:4.12'
+}
+
+repositories {
+    mavenCentral()
+}
+
+//Сконфигурировал таску. Что бы System.out работал в тестах. 
+test {
+    testLogging.showStandardStreams=true 
+}
+
+//Своя таска
+task runMain(type: JavaExec) { //поумолчанию  type: Default
+    main = 'com.epam.helloworldgradle.Runner'
+    classpath = sourceSets.main.runtimeClasspath
+    doLast {
+        println 'Hello world!'
+    }
+}
+
+//Своя таска интегрированная в build lifecycle
+task runTest(type: JavaExec, dependsOn: test){ //После чего
+    main = 'com.epam.calculator.IntegrationalTest'
+    classpath sourceSets.test.runtimeClasspath
+}
+
+check.dependsOn.add(runTest) //До чего
+
+//Своя таска берущая значение из property
+task propertyTask{
+    print x
+}
+
+
+//Отключаем втсроенную таску
+//Так как build task(lifecycle) содержит в себе phases(как в Maven), они выполняются последовательно, т.е. следующая таска dependsOn от предыдущей(предыдущих, учитывая что это цепочка тасков)
+//В Gradle мы можем отключать таски.
+//build.dependsOn.remove('check')
+
+//plugins {
+//    id 'java'
+//}
+//
+//group 'com.epam.gradle'
+//version '1.0-SNAPSHOT'
+//
+//sourceCompatibility = 1.8
+//
+//repositories {
+//    mavenCentral()
+//}
+//
+//dependencies {
+//    testCompile group: 'junit', name: 'junit', version: '4.12'
+//}
