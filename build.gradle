@@ -1,3 +1,4 @@
+import com.epam.customtask.CustomTask
 
 apply plugin : 'java'
 
@@ -32,9 +33,14 @@ task runTest(type: JavaExec, dependsOn: test){ //После чего
 
 check.dependsOn.add(runTest) //До чего
 
-//Своя таска берущая значение из property
+//Своя таска берущая значение из property. Type: Default - видимо запускается даже если не вызывать ее
 task propertyTask{
     print x
+}
+
+//Custom таска из buildSrc
+task myMessage(type: CustomTask) {
+    message = 'My message'
 }
 
 
