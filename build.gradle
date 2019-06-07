@@ -10,4 +10,10 @@ repositories {
     mavenCentral()
 }
 
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.epam.helloworldgradle.runner.Runner'
+    }
+}
+
 
