@@ -1,5 +1,7 @@
 import com.epam.customtask.CustomTask
 
+import java.time.Duration
+
 apply plugin : 'java'
 
 
@@ -11,12 +13,12 @@ repositories {
     mavenCentral()
 }
 
-//Сконфигурировал таску. Что бы System.out работал в тестах. 
+//1. Сконфигурировал таску. Что бы System.out работал в тестах.
 test {
     testLogging.showStandardStreams=true 
 }
 
-//Своя таска
+//2. Своя таска
 task runMain(type: JavaExec) { //поумолчанию  type: Default
     main = 'com.epam.helloworldgradle.Runner'
     classpath = sourceSets.main.runtimeClasspath
@@ -25,7 +27,9 @@ task runMain(type: JavaExec) { //поумолчанию  type: Default
     }
 }
 
-//Своя таска интегрированная в build lifecycle
+
+
+//3. Своя таска интегрированная в build lifecycle
 task runTest(type: JavaExec, dependsOn: test){ //После чего
     main = 'com.epam.calculator.IntegrationalTest'
     classpath sourceSets.test.runtimeClasspath
@@ -33,15 +37,138 @@ task runTest(type: JavaExec, dependsOn: test){ //После чего
 
 check.dependsOn.add(runTest) //До чего
 
-//Своя таска берущая значение из property. Type: Default - видимо запускается даже если не вызывать ее
+//4. Своя таска берущая значение из property. Task Type: Default
 task propertyTask{
-    print x
+    println x //Executed in configuration phase
 }
 
-//Custom таска из buildSrc
+//5. Custom таска из buildSrc
 task myMessage(type: CustomTask) {
-    message = 'My message'
+    message = 'My message_1 '
+    doLast {
+        println 'Executed in execution phase_1'
+    }
+    doLast {
+        println 'Executed in execution phase_1.5'
+    }
 }
+
+
+//Конфигурирование таски
+myMessage {
+    message = 'My message_2 '
+    doLast {
+        println 'Executed in execution phase_2'
+    }
+    println "Executed in configuration phase"
+}
+
+myMessage.message = "My message_3 "
+
+//6. Dynamic tasks????????????????????????????
+4.times {counter -> task "dynamicTask$counter"{
+    doLast{
+        println "Dynamic Task_$counter"
+    }
+}
+}
+
+//7. Manipulating existing tasks
+//Adding a dependency
+//dynamicTask3.dependsOn dynamicTask2, dynamicTask1, dynamicTask0
+
+
+//adding behaviour
+task hello{
+    doLast {println "Hello Eath"}
+    println "Println"
+}
+
+hello.doFirst {println "Hello Venus"}
+
+hello.configure {
+    doLast {println "Hello Mars"}
+}
+
+hello.configure {
+    doLast {println "Hello Jupiter"}
+}
+
+hello {
+    doLast {println "Hello Mercurius"}
+}
+
+//8. Ordering tasks
+task taskA {
+    doLast {println "Task A"}
+}
+
+task taskB {
+    doLast {println "Task B"}
+}
+
+taskB.shouldRunAfter taskA
+
+//9. Adding description to a task
+task taskC{
+    description "<--------Task C"
+    doLast {println "Task C"}
+}
+
+//10. Replacing tasks
+task taskD {
+    doLast {println "Task D1"}
+}
+
+task taskD(overwrite:true){
+    doLast {println "Task D2"}
+}
+
+//11. Skipping task
+//11.1 Using predicate
+task taskE{
+    doLast {println "Task E"}
+}
+
+taskE.onlyIf {false}
+
+//11.2 Using StopExecutionException
+task taskF {
+    doLast {println "Task F"}
+}
+
+taskF.doFirst {
+    println "Task F do first"
+    if (true) { throw new StopExecutionException()}
+}
+
+task taskG{
+    dependsOn taskF
+    doLast {println "Task G is will be Executed"}
+}
+
+//11.3 Enabling and disabling tasks
+
+task disableMe {
+    doLast {
+        println 'This should not be printed if the task is disabled.'
+    }
+}
+disableMe.enabled = false
+
+//11.4 Specifying task timeouts Не работает
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 //Отключаем втсроенную таску
@@ -49,19 +176,4 @@ task myMessage(type: CustomTask) {
 //В Gradle мы можем отключать таски.
 //build.dependsOn.remove('check')
 
-//plugins {
-//    id 'java'
-//}
-//
-//group 'com.epam.gradle'
-//version '1.0-SNAPSHOT'
-//
-//sourceCompatibility = 1.8
-//
-//repositories {
-//    mavenCentral()
-//}
-//
-//dependencies {
-//    testCompile group: 'junit', name: 'junit', version: '4.12'
-//}
+
