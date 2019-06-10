@@ -9,7 +9,7 @@ import java.util.ServiceLoader;
 public class Runner {
 
     public static void main(String[] args) {
-        String name = "Aset";
+        String name = args[0];
 
         ServiceLoader<PrinterInterface> loader = ServiceLoader.load(PrinterInterface.class);
         Iterator<PrinterInterface> iterator = loader.iterator();
