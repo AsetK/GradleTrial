@@ -3,6 +3,7 @@ apply plugin : 'java'
 
 ext.systemProperties= System.properties // or ext.env = System.getProperty("env")
 
+
 dependencies {
     testCompile 'junit:junit:4.12'
 }
@@ -17,9 +18,13 @@ jar {
     }
 }
 
+import org.apache.tools.ant.filters.ReplaceTokens
+
 processResources {
-    include "**/META-INF/", "**/properties/message_${systemProperties.env}.properties"
-    rename "message_${systemProperties.env}.properties", "message.properties"
+    include "**/META-INF/", "**/properties/message.properties"
+    filesMatching("**/properties/message.properties"){
+        filter(ReplaceTokens, tokens: [env: systemProperties.env, name: systemProperties.name])
+    }
 }
 
 
