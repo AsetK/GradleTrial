@@ -22,8 +22,12 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 processResources {
     include "**/META-INF/", "**/properties/message.properties"
+
+    def myProps = new Properties();
+    file("src/main/resources/properties/message_${systemProperties.env}.properties").withInputStream {myProps.load(it)};
+
     filesMatching("**/properties/message.properties"){
-        filter(ReplaceTokens, tokens: [env: systemProperties.env, name: systemProperties.name])
+        filter(ReplaceTokens, tokens: myProps)
     }
 }
 
