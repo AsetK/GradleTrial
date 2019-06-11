@@ -1,51 +1,59 @@
 
 apply plugin : 'java'
+apply plugin : 'maven'
 
 ext.systemProperties= System.properties // or ext.env = System.getProperty("env")
 ext.projectProperties= project.properties // we can use both: System.properties or project.properties
 
 
 dependencies {
-    testCompile 'junit:junit:4.12'
+    compile "org.apache.commons:commons-lang3:3.7"
 }
 
 repositories {
-    mavenCentral()
-}
-
-compileJava{
-    doFirst {
-        String profile = projectProperties.env.toString()
-        if(!profile.equals("dev")&& 
-                !profile.equals("qa")&& 
-                !profile.equals("prod")){
-            throw new InvalidUserDataException("NO env VALUE PASSED!!!")
-        }
+    maven {
+        url "http://epkzkarw0579:8081/repository/mdp-sandbox-mirror/"
     }
 }
 
-processResources{
-    doFirst {
-        String profile = projectProperties.env.toString()
-        if(!profile.equals("dev")&&
-                !profile.equals("qa")&&
-                !profile.equals("prod")){
-            throw new InvalidUserDataException("NO env VALUE PASSED!!!")
-        }
-    }
-}
 
 jar {
     manifest {
-        attributes 'Main-Class': 'com.epam.helloworldgradle.runner.Runner'
+        attributes (
+                'Main-Class': 'com.epam.helloworldgradle.runner.Runner',
+                "Class-Path": '../../lib/commons-lang3-3.8.jar'
+//                'Class-Path': configurations.compile.collect{it.toURI().toString()}.join(' ') to get from gradle cache
+        )
     }
 }
 
-switch (projectProperties.env) {
-    case "dev":     apply from: "${projectProperties.env}.gradle";   break
-    case "qa":      apply from: "${projectProperties.env}.gradle";   break
-    case "prod":    apply from: "${projectProperties.env}.gradle";   break
+task copyLibs(type: Copy) {
+    into "lib"
+    from configurations.compile //???
 }
+
+jar.dependsOn.add(copyLibs)
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "http://epkzkarw0579:8081/repository/mdp-sandbox-release/"){
+                authentication(userName: "admin", password: "admin123")
+            }
+            pom.version = "2.0"
+            pom.artifactId = "HelloWorld_Gradle"
+            pom.groupId = "com.epam.helloworld"
+        }
+    }
+}
+
+
+
+
+
+
+
+
 
 
 
