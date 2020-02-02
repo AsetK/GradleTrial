@@ -7,6 +7,9 @@ apply plugin : 'java'
 
 dependencies {
     testCompile 'junit:junit:4.12'
+    compile 'org.apache.commons:commons-lang3:3.9'
+    compile group: 'commons-lang', name: 'commons-lang', version: '2.6'
+
 }
 
 repositories {
@@ -18,13 +21,57 @@ test {
     testLogging.showStandardStreams=true 
 }
 
-//2. Своя таска
+//2. Своя таска. sourceSets and configurations
 task runMain(type: JavaExec) { //поумолчанию  type: Default
     main = 'com.epam.helloworldgradle.Runner'
-    classpath = sourceSets.main.runtimeClasspath
+
+    //указывает где находиться скомпилированные классы(src) + dependencies.
+    // 'com.epam.helloworldgradle.Runner' - скомпилированный класс
+    classpath = sourceSets.main.runtimeClasspath //или files(sourceSets.main.output.files) - но тогда уже без dependencies, только скомпилированные классы(src)
     doLast {
-        println 'Hello world!'
+        println 'Runtime Class-Path - compiled src + dependencies:'
+        println sourceSets.main.runtimeClasspath.collect { it.toURI() }.join('\n')
+        println '------------------------------------------------------------------------'
+
+        println 'Only main output - compiled src:'
+        println sourceSets.main.output.files
+        println '------------------------------------------------------------------------'
+
+        println 'Only runtime dependencies:'
+        println configurations.runtime.files.collect { it.toURI() }.join('\n')
+        println '------------------------------------------------------------------------'
+
+        println 'PatchingJar path:'
+        println patchingJar.archivePath
+        println '------------------------------------------------------------------------'
+
+        println 'Class-Path:'
+        println classpath.files.collect { it.toURI() }.join('\n')
+        println '------------------------------------------------------------------------'
     }
+}
+
+
+//Jar, JavaExec
+task patchingJar(type: Jar) { //не executable jar, просто jar т.к. нет main-class. Упаковываем все dependencies в 1 jar.
+    dependsOn configurations.runtime  //и без этого работает.
+    baseName = "patching-${project.name}" //нужно поменять, что бы название архива отличалось от архива стандартной jar таски
+    doFirst {
+        manifest {
+            attributes "Class-Path": configurations.runtime.files.collect { it.toURI() }.join(' ') //добавляет в classpath runtime dependencies. но без скомпилированных src
+            println configurations.runtime.files.collect { it.toURI() }.join('\n')
+        }
+    }
+}
+
+task runExecutableJar(type: JavaExec) {
+    // Executable jars can have only _one_ jar on the classpath.
+    classpath = files(tasks.jar)
+
+    // 'main' does not need to be specified
+
+    // arguments to pass to the application
+    args 'appArg1'
 }
 
 
