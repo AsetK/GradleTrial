@@ -2,6 +2,10 @@ import com.epam.customtask.CustomTask
 
 import java.time.Duration
 
+plugins { //For tasks tree. To run: gradle someTask taskTree
+    id "com.dorongold.task-tree" version "1.4"
+}
+
 apply plugin : 'java'
 
 
@@ -23,10 +27,14 @@ test {
 
 //2. Своя таска. sourceSets and configurations
 task runMain(type: JavaExec) { //поумолчанию  type: Default
-    main = 'com.epam.helloworldgradle.Runner'
 
+    doFirst {
+//        classpath = files(sourceSets.main.output.files) //если в doFirst определить class-path, то второе определение( то что после do first, не сравботает.
+//        println classpath.files.collect { it.toURI() }.join('\n')
+    }
     //указывает где находиться скомпилированные классы(src) + dependencies.
     // 'com.epam.helloworldgradle.Runner' - скомпилированный класс
+    main = 'com.epam.helloworldgradle.Runner'
     classpath = sourceSets.main.runtimeClasspath //или files(sourceSets.main.output.files) - но тогда уже без dependencies, только скомпилированные классы(src)
     doLast {
         println 'Runtime Class-Path - compiled src + dependencies:'
@@ -48,6 +56,7 @@ task runMain(type: JavaExec) { //поумолчанию  type: Default
         println 'Class-Path:'
         println classpath.files.collect { it.toURI() }.join('\n')
         println '------------------------------------------------------------------------'
+        println configurations.testRuntime.files.collect { it.toURI() }.join('\n')
     }
 }
 
