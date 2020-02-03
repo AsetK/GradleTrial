@@ -20,6 +20,13 @@ repositories {
     mavenCentral()
 }
 
+sourceSets {
+    script {
+        compileClasspath += sourceSets.main.runtimeClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath
+    }
+}
+
 //1. Сконфигурировал таску. Что бы System.out работал в тестах.
 test {
     testLogging.showStandardStreams=true 
